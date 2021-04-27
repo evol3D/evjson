@@ -1,0 +1,9 @@
+[wrap-git]
+directory = vec
+url = https://github.com/evol3d/vec
+revision = master
+
+patch_directory = vec
+
+[provide]
+dependency_names = vec
