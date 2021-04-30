@@ -1,14 +1,14 @@
 #include <evjson_tokenizer.h>
 
-evjs_res
+evjs_tok_res
 evjs_tokenize_string(
     evstring *json_str,
     vec(evjs_tok) *out)
 {
-  evjs_res res = EVJS_RES_OK;
+  evjs_tok_res res = EVJS_TOK_RES_OK;
   int parent = -1;
   if(out == NULL) {
-    return EVJS_RES_OOM;
+    return EVJS_TOK_RES_OOM;
   }
 
   typedef struct evjs_scope {
@@ -18,7 +18,7 @@ evjs_tokenize_string(
 
   vec(evjs_scope) scopes = vec_init(evjs_scope);
   if(!scopes) {
-    return EVJS_RES_OOM;
+    return EVJS_TOK_RES_OOM;
   }
 
 #define __INC_PARENT__ \
@@ -52,7 +52,7 @@ evjs_tokenize_string(
         evjs_toktype type = (curr_char == '}')?EVJS_TOKTYPE_OBJECT:EVJS_TOKTYPE_ARRAY;
         evjs_scope *curr_scope = vec_last(&scopes);
         if(curr_scope == NULL || curr_scope->type != type) {
-          res = EVJS_RES_INVALIDJSON;
+          res = EVJS_TOK_RES_INVALIDJSON;
           goto endoffunction;
         }
 
@@ -122,12 +122,12 @@ evjs_tokenize_string(
                   break;
 
                 default:
-                  res = EVJS_RES_INVALIDJSON;
+                  res = EVJS_TOK_RES_INVALIDJSON;
                   goto endoffunction;
               }
             }
           }
-          res = EVJS_RES_INVALIDJSON;
+          res = EVJS_TOK_RES_INVALIDJSON;
           goto endoffunction;
         }
 string_end:
@@ -165,7 +165,7 @@ string_end:
                 break;
             }
             if((*json_str)[pos_prim] < 32 || (*json_str)[pos_prim] >= 127) {
-              res = EVJS_RES_INVALIDJSON;
+              res = EVJS_TOK_RES_INVALIDJSON;
               goto endoffunction;
             }
           }

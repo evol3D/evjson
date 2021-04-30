@@ -1,5 +1,6 @@
 examples = [
   [ 'example1', [ 'example1.c' ] ],
+  [ 'example2', [ 'example2.c' ] ],
 ]
 
 evjson = dependency('evjson')

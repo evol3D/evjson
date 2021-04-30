@@ -3,7 +3,13 @@
 
 #include <evstr.h>
 #include <vec.h>
-#include <evjson.h>
+
+typedef enum {
+  EVJS_TOK_RES_OK,
+  EVJS_TOK_RES_OOM,
+  EVJS_TOK_RES_INVALIDJSON,
+} evjs_tok_res;
+
 
 #define TOKTYPE_LIST \
   TOKTYPE(OBJECT)    \
@@ -38,7 +44,7 @@ typedef struct {
   unsigned int child_count;
 } evjs_tok;
 
-evjs_res
+evjs_tok_res
 evjs_tokenize_string(
     evstring *json_str,
     vec(evjs_tok) *out);
