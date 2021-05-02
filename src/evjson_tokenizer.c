@@ -1,6 +1,110 @@
 #include <evjson_tokenizer.h>
 
 evjs_tok_res
+evjs_extract_primitive(
+    evstring *json_str,
+    vec(evjs_tok) *out,
+    size_t prim_start,
+    size_t *pos)
+{
+  evjs_tok_res res = EVJS_TOK_RES_OK;
+  evjs_toktype prim_type;
+  size_t pos_prim;
+
+  switch((*json_str)[prim_start]) {
+    case 't':
+    case 'f':
+      prim_type = EVJS_TOKTYPE_BOOLEAN;
+      break;
+    case 'n':
+      prim_type = EVJS_TOKTYPE_UNDEFINED;
+      break;
+    default:
+      prim_type = EVJS_TOKTYPE_NUMBER;
+      break;
+  }
+
+  for(pos_prim = prim_start + 1; pos_prim < evstring_len(*json_str); pos_prim++) {
+    switch((*json_str)[pos_prim]) {
+      case '\t':
+      case '\r':
+      case '\n':
+      case ' ':
+      case ',':
+      case ']':
+      case '}':
+        goto endofprim;
+      default:
+        break;
+    }
+    if((*json_str)[pos_prim] < 32 || (*json_str)[pos_prim] >= 127) {
+      res = EVJS_TOK_RES_INVALIDJSON;
+      goto endofprimfn;
+    }
+  }
+endofprim:
+  vec_push(out, &(evjs_tok) {
+    .type = prim_type,
+    .json_slice = evstring_slice(json_str, prim_start, pos_prim),
+    .child_count = 0,
+  });
+  *pos = pos_prim - 1;
+
+endofprimfn:
+  return res;
+}
+
+evjs_tok_res
+evjs_extract_string(
+    evstring *json_str,
+    vec(evjs_tok) *out,
+    size_t str_start,
+    size_t *pos)
+{
+  evjs_tok_res res = EVJS_TOK_RES_OK;
+
+  for(size_t pos_str = str_start; pos_str < evstring_len(*json_str); pos_str++) {
+    char curr_strchar = (*json_str)[pos_str];
+    if(curr_strchar == '\"') { // End of string
+      evjs_tok strtok = {
+        .type = EVJS_TOKTYPE_STRING,
+        .json_slice = evstring_slice(json_str, str_start, pos_str),
+        .child_count = 0,
+      };
+      vec_push(out, &strtok);
+      *pos = pos_str;
+      goto endofstrfn;
+    }
+
+    if (curr_strchar == '\\' && pos_str + 1 < evstring_len(*json_str)) {
+      pos_str++;
+      switch((*json_str)[pos_str]) { // Escaped
+        case '\"':
+        case '/':
+        case '\\':
+        case 'b':
+        case 'f':
+        case 'r':
+        case 'n':
+        case 't':
+          break;
+
+        case 'u': // Escaped UTF
+          /* assert(!"unimplemented unicode"); */
+          break;
+
+        default:
+          res = EVJS_TOK_RES_INVALIDJSON;
+          goto endofstrfn;
+      }
+    }
+  }
+
+endofstrfn:
+  return res;
+}
+
+evjs_tok_res
 evjs_tokenize_string(
     evstring *json_str,
     vec(evjs_tok) *out)
@@ -90,100 +194,26 @@ evjs_tokenize_string(
 
       case '\"':
         {
-          int str_start = ++pos;
-          for(size_t pos_str = pos; pos_str < evstring_len(*json_str); pos_str++) {
-            char curr_strchar = (*json_str)[pos_str];
-            if(curr_strchar == '\"') { // End of string
-              evjs_tok strtok = {
-                .type = EVJS_TOKTYPE_STRING,
-                .json_slice = evstring_slice(json_str, str_start, pos_str),
-                .child_count = 0,
-              };
-              vec_push(out, &strtok);
-              pos = pos_str;
-              goto string_end;
-            }
-
-            if (curr_strchar == '\\' && pos_str + 1 < evstring_len(*json_str)) {
-              pos_str++;
-              switch((*json_str)[pos_str]) { // Escaped
-                case '\"':
-                case '/':
-                case '\\':
-                case 'b':
-                case 'f':
-                case 'r':
-                case 'n':
-                case 't':
-                  break;
-
-                case 'u': // Escaped UTF
-                  /* assert(!"unimplemented unicode"); */
-                  break;
-
-                default:
-                  res = EVJS_TOK_RES_INVALIDJSON;
-                  goto endoffunction;
-              }
-            }
+          evjs_tok_res str_res = evjs_extract_string(json_str, out, pos + 1, &pos);
+          if(str_res != EVJS_TOK_RES_OK) {
+            res = str_res;
+            goto endoffunction;
           }
-          res = EVJS_TOK_RES_INVALIDJSON;
-          goto endoffunction;
+          __INC_PARENT__
         }
-string_end:
-        __INC_PARENT__
         break;
-
       default:
         {
-          int prim_start = pos++;
-          evjs_toktype prim_type;
-          size_t pos_prim;
-          switch((*json_str)[prim_start]) {
-            case 't':
-            case 'f':
-              prim_type = EVJS_TOKTYPE_BOOLEAN;
-              break;
-            case 'n':
-              prim_type = EVJS_TOKTYPE_UNDEFINED;
-              break;
-            default:
-              prim_type = EVJS_TOKTYPE_NUMBER;
-              break;
+          evjs_tok_res prim_res = evjs_extract_primitive(json_str, out, pos, &pos);
+          if(prim_res != EVJS_TOK_RES_OK) {
+            res = prim_res;
+            goto endoffunction;
           }
-          for(pos_prim = pos; pos_prim < evstring_len(*json_str); pos_prim++) {
-            switch((*json_str)[pos_prim]) {
-              case '\t':
-              case '\r':
-              case '\n':
-              case ' ':
-              case ',':
-              case ']':
-              case '}':
-                goto endofprim;
-              default:
-                break;
-            }
-            if((*json_str)[pos_prim] < 32 || (*json_str)[pos_prim] >= 127) {
-              res = EVJS_TOK_RES_INVALIDJSON;
-              goto endoffunction;
-            }
-          }
-endofprim:
-          {
-            vec_push(out, &(evjs_tok) {
-              .type = prim_type,
-              .json_slice = evstring_slice(json_str, prim_start, pos_prim),
-              .child_count = 0,
-            });
-            pos = pos_prim - 1;
-
-            __INC_PARENT__
-          }
+          __INC_PARENT__
+        }
         break;
       }
     }
-  }
 endoffunction:
   vec_fini(scopes);
   return res;
