@@ -127,6 +127,15 @@ evjs_parsearray(
   size_t element_count = tokens[*idx].child_count;
   size_t curr_pos = (*idx) + 1;
 
+  // Array len
+  // {
+  evjson_entry arraylen_entry = {
+    .type = EVJS_TOKTYPE_NUMBER,
+    .as_num = element_count
+  };
+  Hashmap(evstring, evjson_entry).push(ev->map, evstring_newfmt("%s.len", *prefix), arraylen_entry);
+  // }
+
   for(int i = 0; i < element_count; i++) {
     evstring element_name;
     if(prefix) {
@@ -134,6 +143,8 @@ evjs_parsearray(
     } else {
       element_name = evstring_newfmt("[%d]", i);
     }
+
+    assert(element_name);
 
     evjson_entry entry = {
       .type = tokens[curr_pos].type,
