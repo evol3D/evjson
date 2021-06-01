@@ -154,7 +154,7 @@ evjs_tokenize_string(
       case ']':
       {
         evjs_toktype type = (curr_char == '}')?EVJS_TOKTYPE_OBJECT:EVJS_TOKTYPE_ARRAY;
-        evjs_scope *curr_scope = vec_last(&scopes);
+        evjs_scope *curr_scope = vec_last(scopes);
         if(curr_scope == NULL || curr_scope->type != type) {
           res = EVJS_TOK_RES_INVALIDJSON;
           goto endoffunction;
@@ -165,7 +165,7 @@ evjs_tokenize_string(
 
         vec_pop(&scopes, NULL);
 
-        evjs_scope *new_scope = vec_last(&scopes);
+        evjs_scope *new_scope = vec_last(scopes);
         if(new_scope != NULL) {
           parent = new_scope->idx;
         }
@@ -185,7 +185,7 @@ evjs_tokenize_string(
         if(parent != -1
             && (*out)[parent].type != EVJS_TOKTYPE_ARRAY
             && (*out)[parent].type != EVJS_TOKTYPE_OBJECT) {
-          evjs_scope *new_scope = vec_last(&scopes);
+          evjs_scope *new_scope = vec_last(scopes);
           if(new_scope != NULL) {
             parent = new_scope->idx;
           }
