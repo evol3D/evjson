@@ -46,7 +46,7 @@ typedef struct {
 
 evjs_tok_res
 evjs_tokenize_string(
-    evstring *json_str,
+    evstring json_str,
     vec(evjs_tok) *out);
 
 

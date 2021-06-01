@@ -88,14 +88,14 @@ evjs_parseobject(
           break;
         case EVJS_TOKTYPE_BOOLEAN:
           {
-            const char *val = *(tokens[curr_pos].json_slice.data) + tokens[curr_pos].json_slice.offset;
+            const char *val = tokens[curr_pos].json_slice.data + tokens[curr_pos].json_slice.offset;
             entry.as_bool = (val[0] == 't');
             curr_pos++;
           }
           break;
         case EVJS_TOKTYPE_NUMBER:
           {
-            const char *val = *(tokens[curr_pos].json_slice.data) + tokens[curr_pos].json_slice.offset;
+            const char *val = tokens[curr_pos].json_slice.data + tokens[curr_pos].json_slice.offset;
             entry.as_num = strtod(val, NULL);
             curr_pos++;
           }
@@ -163,14 +163,14 @@ evjs_parsearray(
         break;
       case EVJS_TOKTYPE_BOOLEAN:
         {
-          const char *val = *(tokens[curr_pos].json_slice.data) + tokens[curr_pos].json_slice.offset;
+          const char *val = tokens[curr_pos].json_slice.data + tokens[curr_pos].json_slice.offset;
           entry.as_bool = (val[0] == 't');
           curr_pos++;
         }
         break;
       case EVJS_TOKTYPE_NUMBER:
         {
-          const char *val = *(tokens[curr_pos].json_slice.data) + tokens[curr_pos].json_slice.offset;
+          const char *val = tokens[curr_pos].json_slice.data + tokens[curr_pos].json_slice.offset;
           entry.as_num = strtod(val, NULL);
           curr_pos++;
         }
@@ -230,7 +230,7 @@ evjs_loadjson(
   size_t new_json_idx = vec_push(&(ev->json_strings), &new_json);
 
   vec(evjs_tok) tokens = vec_init(evjs_tok);
-  assert(evjs_tokenize_string(ev->json_strings + new_json_idx, &tokens) == EVJS_TOK_RES_OK);
+  assert(evjs_tokenize_string(ev->json_strings[new_json_idx], &tokens) == EVJS_TOK_RES_OK);
 
   assert(evjs_parsejson(ev, tokens) == EVJS_RES_OK);
 

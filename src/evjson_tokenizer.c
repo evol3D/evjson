@@ -2,7 +2,7 @@
 
 evjs_tok_res
 evjs_extract_primitive(
-    evstring *json_str,
+    evstring json_str,
     vec(evjs_tok) *out,
     size_t prim_start,
     size_t *pos)
@@ -11,7 +11,7 @@ evjs_extract_primitive(
   evjs_toktype prim_type;
   size_t pos_prim;
 
-  switch((*json_str)[prim_start]) {
+  switch(json_str[prim_start]) {
     case 't':
     case 'f':
       prim_type = EVJS_TOKTYPE_BOOLEAN;
@@ -24,8 +24,8 @@ evjs_extract_primitive(
       break;
   }
 
-  for(pos_prim = prim_start + 1; pos_prim < evstring_len(*json_str); pos_prim++) {
-    switch((*json_str)[pos_prim]) {
+  for(pos_prim = prim_start + 1; pos_prim < evstring_len(json_str); pos_prim++) {
+    switch(json_str[pos_prim]) {
       case '\t':
       case '\r':
       case '\n':
@@ -37,7 +37,7 @@ evjs_extract_primitive(
       default:
         break;
     }
-    if((*json_str)[pos_prim] < 32 || (*json_str)[pos_prim] >= 127) {
+    if(json_str[pos_prim] < 32 || json_str[pos_prim] >= 127) {
       res = EVJS_TOK_RES_INVALIDJSON;
       goto endofprimfn;
     }
@@ -56,15 +56,15 @@ endofprimfn:
 
 evjs_tok_res
 evjs_extract_string(
-    evstring *json_str,
+    evstring json_str,
     vec(evjs_tok) *out,
     size_t str_start,
     size_t *pos)
 {
   evjs_tok_res res = EVJS_TOK_RES_OK;
 
-  for(size_t pos_str = str_start; pos_str < evstring_len(*json_str); pos_str++) {
-    char curr_strchar = (*json_str)[pos_str];
+  for(size_t pos_str = str_start; pos_str < evstring_len(json_str); pos_str++) {
+    char curr_strchar = json_str[pos_str];
     if(curr_strchar == '\"') { // End of string
       evjs_tok strtok = {
         .type = EVJS_TOKTYPE_STRING,
@@ -76,9 +76,9 @@ evjs_extract_string(
       goto endofstrfn;
     }
 
-    if (curr_strchar == '\\' && pos_str + 1 < evstring_len(*json_str)) {
+    if (curr_strchar == '\\' && pos_str + 1 < evstring_len(json_str)) {
       pos_str++;
-      switch((*json_str)[pos_str]) { // Escaped
+      switch(json_str[pos_str]) { // Escaped
         case '\"':
         case '/':
         case '\\':
@@ -106,7 +106,7 @@ endofstrfn:
 
 evjs_tok_res
 evjs_tokenize_string(
-    evstring *json_str,
+    evstring json_str,
     vec(evjs_tok) *out)
 {
   evjs_tok_res res = EVJS_TOK_RES_OK;
@@ -128,8 +128,8 @@ evjs_tokenize_string(
 #define __INC_PARENT__ \
   if(parent != -1) { (*out)[parent].child_count++; }
 
-  for(size_t pos = 0; pos < evstring_len(*json_str); pos++) {
-    char curr_char = (*json_str)[pos];
+  for(size_t pos = 0; pos < evstring_len(json_str); pos++) {
+    char curr_char = json_str[pos];
     switch(curr_char) {
       // Start of an object/array
       case '{':
