@@ -25,7 +25,7 @@ evjson_lib = library(
   evjson_src, 
   include_directories: evjson_inc,
   dependencies: evjson_deps,
-  c_args: ['-DEVJSON_DLL', '-DEVJSON_IMPL'],
+  c_args: ['-DEVJSON_DLL', '-DEVJSON_IMPL', '-DVEC_IMPL', '-DEVSTR_IMPL', '-DHM_IMPL'],
 )
 
 evjson_dep = declare_dependency(

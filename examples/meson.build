@@ -10,6 +10,7 @@ foreach ex : examples
     ex[0],
     ex[1],
     dependencies: [ evjson ],
+    c_args: ['-DEVJSON_IMPL'],
   )
 endforeach
 
