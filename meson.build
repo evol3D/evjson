@@ -10,8 +10,8 @@ evjson_src = files(
   'src/evjson.c',
   'src/evjson_tokenizer.c')
 
-vec = dependency('vec')
-evstr = dependency('evstr')
+vec = dependency('ev_vec')
+evstr = dependency('ev_str')
 hashmap = dependency('hashmap')
 
 evjson_deps = [
@@ -20,12 +20,23 @@ evjson_deps = [
   hashmap,
 ]
 
-evjson_lib = library(
+c_args = ['-DEVJSON_DLL', '-DEVJSON_IMPL', '-DEV_VEC_IMPL', '-DEV_STR_IMPL', '-DHM_IMPL']
+
+buildtype = get_option('buildtype')
+if buildtype == 'debug'
+  c_args += '-DEV_BUILDTYPE_DEBUG=1'
+elif buildtype == 'debugoptimized'
+  c_args += '-DEV_BUILDTYPE_DEBUGOPT=1'
+else
+  c_args += '-DEV_BUILDTYPE_RELEASE=1'
+endif
+
+evjson_lib = static_library(
   'evjson', 
   evjson_src, 
   include_directories: evjson_inc,
   dependencies: evjson_deps,
-  c_args: ['-DEVJSON_DLL', '-DEVJSON_IMPL', '-DVEC_IMPL', '-DEVSTR_IMPL', '-DHM_IMPL'],
+  c_args: c_args,
 )
 
 evjson_dep = declare_dependency(

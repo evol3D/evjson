@@ -1,5 +1,11 @@
 #include <evjson_tokenizer.h>
 
+typedef struct evjs_scope {
+  evjs_toktype type;
+  int idx;
+} evjs_scope;
+TYPEDATA_GEN(evjs_scope);
+
 evjs_tok_res
 evjs_extract_primitive(
     evstring json_str,
@@ -24,7 +30,7 @@ evjs_extract_primitive(
       break;
   }
 
-  for(pos_prim = prim_start + 1; pos_prim < evstring_len(json_str); pos_prim++) {
+  for(pos_prim = prim_start + 1; pos_prim < evstring_getLength(json_str); pos_prim++) {
     switch(json_str[pos_prim]) {
       case '\t':
       case '\r':
@@ -43,7 +49,7 @@ evjs_extract_primitive(
     }
   }
 endofprim:
-  vec_push(out, &(evjs_tok) {
+  ev_vec_push_impl(out, &(evjs_tok) {
     .type = prim_type,
     .json_slice = evstring_slice(json_str, prim_start, pos_prim),
     .child_count = 0,
@@ -63,7 +69,7 @@ evjs_extract_string(
 {
   evjs_tok_res res = EVJS_TOK_RES_OK;
 
-  for(size_t pos_str = str_start; pos_str < evstring_len(json_str); pos_str++) {
+  for(size_t pos_str = str_start; pos_str < evstring_getLength(json_str); pos_str++) {
     char curr_strchar = json_str[pos_str];
     if(curr_strchar == '\"') { // End of string
       evjs_tok strtok = {
@@ -71,12 +77,12 @@ evjs_extract_string(
         .json_slice = evstring_slice(json_str, str_start, pos_str),
         .child_count = 0,
       };
-      vec_push(out, &strtok);
+      ev_vec_push_impl(out, &strtok);
       *pos = pos_str;
       goto endofstrfn;
     }
 
-    if (curr_strchar == '\\' && pos_str + 1 < evstring_len(json_str)) {
+    if (curr_strchar == '\\' && pos_str + 1 < evstring_getLength(json_str)) {
       pos_str++;
       switch(json_str[pos_str]) { // Escaped
         case '\"':
@@ -115,11 +121,6 @@ evjs_tokenize_string(
     return EVJS_TOK_RES_OOM;
   }
 
-  typedef struct evjs_scope {
-    evjs_toktype type;
-    int idx;
-  } evjs_scope;
-
   vec(evjs_scope) scopes = vec_init(evjs_scope);
   if(!scopes) {
     return EVJS_TOK_RES_OOM;
@@ -128,7 +129,7 @@ evjs_tokenize_string(
 #define __INC_PARENT__ \
   if(parent != -1) { (*out)[parent].child_count++; }
 
-  for(size_t pos = 0; pos < evstring_len(json_str); pos++) {
+  for(size_t pos = 0; pos < evstring_getLength(json_str); pos++) {
     char curr_char = json_str[pos];
     switch(curr_char) {
       // Start of an object/array
@@ -143,8 +144,8 @@ evjs_tokenize_string(
           .child_count = 0,
         };
 
-        parent = vec_push(out, &curr_tok);
-        vec_push(&scopes, &(evjs_scope){ curr_tok.type, parent });
+        parent = vec_push(*out, curr_tok);
+        vec_push(scopes, (evjs_scope){ curr_tok.type, parent });
 
         break;
       }
@@ -163,7 +164,7 @@ evjs_tokenize_string(
         (*out)[curr_scope->idx].json_slice.len  = (pos + 1) - (*out)[curr_scope->idx].json_slice.offset;
         parent = -1;
 
-        vec_pop(&scopes, NULL);
+        ev_vec_pop(&scopes, NULL);
 
         evjs_scope *new_scope = vec_last(scopes);
         if(new_scope != NULL) {

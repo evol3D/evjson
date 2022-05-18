@@ -2,7 +2,7 @@
 #include <evjson_tokenizer.h>
 #include <assert.h>
 
-const char *JSON = 
+evstring JSON = evstr(
 "{\n"
 "  \"compression\":\"LZ4\",\n"
 "  \"index_buffer_size\":211260,\n"
@@ -13,7 +13,8 @@ const char *JSON =
 "  \"test_bool\":true,\n"
 "  \"test_bool\":false,\n"
 "  \"test_null\":null\n"
-"}\n";
+"}\n"
+);
 /* "{\n" */
 /* "  \"bounds\": [\n" */
 /* "    0.1726369857788086,\n" */
@@ -33,10 +34,12 @@ const char *JSON =
 
 int main(int argc, char **argv)
 {
-  evstring json_string = evstring_new(JSON);
-  vec(evjs_tok) tokens = vec_init(evjs_tok);
+  vec(evjs_tok) tokens = svec_init_w_cap(evjs_tok, 512);
+  char out[512] = {0};
+  EV_TOSTR(EvTypeData)(&TypeData(evjs_tok), out);
+  puts(out);
 
-  assert(evjs_tokenize_string(&json_string, &tokens) == EVJS_TOK_RES_OK);
+  assert(evjs_tokenize_string(JSON, &tokens) == EVJS_TOK_RES_OK);
 
   for(int i = 0; i < vec_len(tokens); i++) {
     evjs_tok curr = tokens[i];
@@ -44,6 +47,6 @@ int main(int argc, char **argv)
   }
 
   vec_fini(tokens);
-  evstring_free(json_string);
+  evstring_free(JSON);
   return 0;
 }

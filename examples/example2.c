@@ -3,7 +3,7 @@
 #include <evjson_tokenizer.h>
 #include <assert.h>
 
-const char *JSON = 
+evstring JSON = evstr(
 "{\n"
 "  \"compression\":\"LZ4\",\n"
 "  \"index_buffer_size\":211260,\n"
@@ -27,7 +27,8 @@ const char *JSON =
 "      3.6981143951416016\n"
 "    ],\n"
 "  }\n"
-"}\n";
+"}\n"
+);
 
 int main(int argc, char **argv)
 {
@@ -37,7 +38,7 @@ int main(int argc, char **argv)
 
   evjson_entry *compression = evjs_get(evjs, "compression");
   if(compression && compression->type == EVJS_TOKTYPE_STRING) {
-    printf("compression = %.*s\n", (int)compression->as_str.len, (*(compression->as_str.data) + compression->as_str.offset));
+    printf("compression = %.*s\n", (int)compression->as_str.len, compression->as_str.data + compression->as_str.offset);
   }
 
   evjson_entry *index_buffer_size = evjs_get(evjs, "index_buffer_size");
@@ -56,7 +57,7 @@ int main(int argc, char **argv)
 
   evjson_entry *original_file = evjs_get(evjs, "original_file");
   if(original_file && original_file->type == EVJS_TOKTYPE_STRING) {
-    printf("original_file = %.*s\n", (int)original_file->as_str.len, (*(original_file->as_str.data) + original_file->as_str.offset));
+    printf("original_file = %.*s\n", (int)original_file->as_str.len, original_file->as_str.data + original_file->as_str.offset);
   }
 
   evjson_entry *vertex_buffer_size = evjs_get(evjs, "vertex_buffer_size");
@@ -66,7 +67,7 @@ int main(int argc, char **argv)
 
   evjson_entry *vertex_format = evjs_get(evjs, "vertex_format");
   if(vertex_format && vertex_format->type == EVJS_TOKTYPE_STRING) {
-    printf("vertex_format = %.*s\n", (int)vertex_format->as_str.len, (*(vertex_format->as_str.data) + vertex_format->as_str.offset));
+    printf("vertex_format = %.*s\n", (int)vertex_format->as_str.len, vertex_format->as_str.data + vertex_format->as_str.offset);
   }
 
   evjson_entry *test_bool_true = evjs_get(evjs, "test_bool_true");
@@ -86,7 +87,7 @@ int main(int argc, char **argv)
 
   evjson_entry *inner_str = evjs_get(evjs, "test_obj.str");
   if(inner_str && inner_str->type == EVJS_TOKTYPE_STRING) {
-    printf("test_obj.str = %.*s\n", (int)inner_str->as_str.len, (*(inner_str->as_str.data) + inner_str->as_str.offset));
+    printf("test_obj.str = %.*s\n", (int)inner_str->as_str.len, inner_str->as_str.data + inner_str->as_str.offset);
   }
 
   evjson_entry *inner_int = evjs_get(evjs, "test_obj.int");

@@ -1,8 +1,10 @@
 #ifndef EVJSON_TOKENIZER_HEADER
 #define EVJSON_TOKENIZER_HEADER
 
-#include <evstr.h>
-#include <vec.h>
+#define EV_VEC_SHORTNAMES
+
+#include <ev_str.h>
+#include <ev_vec.h>
 
 typedef enum {
   EVJS_TOK_RES_OK,
@@ -40,14 +42,15 @@ static const char * evjs_toktype_str[] = {
 
 typedef struct {
   evjs_toktype type;
-  evstr_ref json_slice;
+  evstring_view json_slice;
   unsigned int child_count;
 } evjs_tok;
+
+TYPEDATA_GEN(evjs_tok);
 
 evjs_tok_res
 evjs_tokenize_string(
     evstring json_str,
     vec(evjs_tok) *out);
-
 
 #endif

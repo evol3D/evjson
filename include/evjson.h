@@ -1,7 +1,8 @@
 #ifndef EVJSON_HEADER
 #define EVJSON_HEADER
 
-#include <evstr.h>
+#define EV_VEC_SHORTNAMES
+#include <ev_str.h>
 #include <evjson_tokenizer.h>
 #include <stdbool.h>
 
@@ -34,7 +35,7 @@ typedef struct {
   union {
     bool as_bool;
     double as_num;
-    evstr_ref as_str;
+    evstring_view as_str;
   };
 } evjson_entry;
 
@@ -46,7 +47,7 @@ evjs_init();
 EVJSON_API evjs_res
 evjs_loadjson(
     evjson_t *ev,
-    const char *json_string);
+    evstring json_string);
 
 EVJSON_API evjs_res
 evjs_fini(

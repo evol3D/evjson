@@ -2,10 +2,9 @@
 #include <evjson_tokenizer.h>
 #include <stdlib.h>
 
-// TODO remove
-#include <stdio.h>
+// #include <stdio.h>
 
-#define NAME_DELIM_CHAR '.'
+#define NAME_DELIM_CHAR ((char)'.')
 
 #include <hashmap.h>
 HashFunctionDefineCustom(evstring, pVar){ return hashmap_murmur(*pVar, strlen(*pVar), seed0, seed1); }
@@ -62,11 +61,11 @@ evjs_parseobject(
     {
       evstring element_name;
       if(prefix) {
-        element_name = evstring_clone(*prefix);
-        evstring_pushchar(&element_name, NAME_DELIM_CHAR);
-        evstring_refpush(&element_name, tokens[curr_pos].json_slice);
+        element_name = evstring_new(*prefix);
+        evstring_push(&element_name, NAME_DELIM_CHAR);
+        evstring_push(&element_name, tokens[curr_pos].json_slice);
       } else {
-        element_name = evstring_refclone(tokens[curr_pos].json_slice);
+        element_name = evstring_new(tokens[curr_pos].json_slice);
       }
 
       curr_pos++;
@@ -133,15 +132,15 @@ evjs_parsearray(
     .type = EVJS_TOKTYPE_NUMBER,
     .as_num = element_count
   };
-  Hashmap(evstring, evjson_entry).push(ev->map, evstring_newfmt("%s.len", *prefix), arraylen_entry);
+  Hashmap(evstring, evjson_entry).push(ev->map, evstring_new("%s.len", *prefix), arraylen_entry);
   // }
 
   for(int i = 0; i < element_count; i++) {
     evstring element_name;
     if(prefix) {
-      element_name = evstring_newfmt("%s[%d]", *prefix, i);
+      element_name = evstring_new("%s[%d]", *prefix, i);
     } else {
-      element_name = evstring_newfmt("[%d]", i);
+      element_name = evstring_new("[%d]", i);
     }
 
     assert(element_name);
@@ -224,10 +223,9 @@ evjs_parsejson(
 evjs_res
 evjs_loadjson(
     evjson_t *ev,
-    const char *json_string)
+    evstring new_json)
 {
-  evstring new_json = evstring_new(json_string);
-  size_t new_json_idx = vec_push(&(ev->json_strings), &new_json);
+  size_t new_json_idx = vec_push(ev->json_strings, new_json);
 
   vec(evjs_tok) tokens = vec_init(evjs_tok);
   assert(evjs_tokenize_string(ev->json_strings[new_json_idx], &tokens) == EVJS_TOK_RES_OK);
