@@ -213,7 +213,7 @@ evjs_parsejson(
       return EVJS_RES_INVALIDJSON;
   }
 
-  assert(pos == vec_len(tokens));
+  assert(pos == vec_len(&tokens));
 
   /* Hashmap(evstring, evjson_entry).iter(ev->map, print_entries); */
 
@@ -225,14 +225,14 @@ evjs_loadjson(
     evjson_t *ev,
     evstring new_json)
 {
-  size_t new_json_idx = vec_push(ev->json_strings, new_json);
+  size_t new_json_idx = vec_push(&ev->json_strings, &new_json);
 
   vec(evjs_tok) tokens = vec_init(evjs_tok);
   assert(evjs_tokenize_string(ev->json_strings[new_json_idx], &tokens) == EVJS_TOK_RES_OK);
 
   assert(evjs_parsejson(ev, tokens) == EVJS_RES_OK);
 
-  vec_fini(tokens);
+  vec_fini(&tokens);
   return EVJS_RES_OK;
 }
 
@@ -250,10 +250,10 @@ evjs_fini(
 {
 
   Hashmap(evstring, evjson_entry).free(ev->map);
-  for(int i = 0; i < vec_len(ev->json_strings); i++) {
+  for(int i = 0; i < vec_len(&ev->json_strings); i++) {
     evstring_free(ev->json_strings[i]);
   }
-  vec_fini(ev->json_strings);
+  vec_fini(&ev->json_strings);
   free(ev);
 
   return EVJS_RES_OK;

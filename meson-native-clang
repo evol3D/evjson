@@ -1,0 +1,8 @@
+[binaries]
+c = 'clang.exe'
+c_ld = 'lld'
+cpp = 'clang++.exe'
+cpp_ld = 'lld'
+
+[properties]
+c_args = ['-DEV_CC_CLANG=1']

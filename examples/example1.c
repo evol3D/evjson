@@ -41,12 +41,12 @@ int main(int argc, char **argv)
 
   assert(evjs_tokenize_string(JSON, &tokens) == EVJS_TOK_RES_OK);
 
-  for(int i = 0; i < vec_len(tokens); i++) {
+  for(int i = 0; i < vec_len(&tokens); i++) {
     evjs_tok curr = tokens[i];
     printf( "Token #%d { %s, %d }\n", i, evjs_toktype_str[curr.type], curr.child_count);
   }
 
-  vec_fini(tokens);
+  vec_fini(&tokens);
   evstring_free(JSON);
   return 0;
 }

@@ -144,8 +144,13 @@ evjs_tokenize_string(
           .child_count = 0,
         };
 
-        parent = vec_push(*out, curr_tok);
-        vec_push(scopes, (evjs_scope){ curr_tok.type, parent });
+        parent = vec_push(out, &curr_tok);
+
+        evjs_scope curr_scope = {
+          curr_tok.type, 
+          parent
+        };
+        vec_push(&scopes, &curr_scope);
 
         break;
       }
@@ -155,7 +160,7 @@ evjs_tokenize_string(
       case ']':
       {
         evjs_toktype type = (curr_char == '}')?EVJS_TOKTYPE_OBJECT:EVJS_TOKTYPE_ARRAY;
-        evjs_scope *curr_scope = vec_last(scopes);
+        evjs_scope *curr_scope = vec_last(&scopes);
         if(curr_scope == NULL || curr_scope->type != type) {
           res = EVJS_TOK_RES_INVALIDJSON;
           goto endoffunction;
@@ -166,7 +171,7 @@ evjs_tokenize_string(
 
         ev_vec_pop(&scopes, NULL);
 
-        evjs_scope *new_scope = vec_last(scopes);
+        evjs_scope *new_scope = vec_last(&scopes);
         if(new_scope != NULL) {
           parent = new_scope->idx;
         }
@@ -179,14 +184,14 @@ evjs_tokenize_string(
       case ' ':
         break;
       case ':':
-        parent = vec_len(*out)-1;
+        parent = vec_len(out)-1;
         break;
 
       case ',':
         if(parent != -1
             && (*out)[parent].type != EVJS_TOKTYPE_ARRAY
             && (*out)[parent].type != EVJS_TOKTYPE_OBJECT) {
-          evjs_scope *new_scope = vec_last(scopes);
+          evjs_scope *new_scope = vec_last(&scopes);
           if(new_scope != NULL) {
             parent = new_scope->idx;
           }
@@ -216,6 +221,6 @@ evjs_tokenize_string(
       }
     }
 endoffunction:
-  vec_fini(scopes);
+  vec_fini(&scopes);
   return res;
 }
