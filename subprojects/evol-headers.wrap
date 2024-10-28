@@ -1,0 +1,7 @@
+[wrap-git]
+directory = evol-headers
+url = https://github.com/evol3d/evol-headers
+revision = master
+
+[provide]
+dependency_names = ev_str, ev_vec, evol-headers
